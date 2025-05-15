@@ -1,0 +1,59 @@
+<!-- templates/payments/admin_dashboard.html -->
+{% extends 'payments/base.html' %}
+{% block content %}
+<h2>Панель администратора</h2>
+
+<form method="get" class="form-inline mb-3">
+  <label class="mr-2">Фильтр:</label>
+  <select name="status" class="form-control mr-2">
+    <option value="">Все</option>
+    <option value="SUSPICIOUS" {% if status_filter == "SUSPICIOUS" %}selected{% endif %}>Подозрительные</option>
+    <option value="PENDING" {% if status_filter == "PENDING" %}selected{% endif %}>В ожидании</option>
+    <option value="APPROVED" {% if status_filter == "APPROVED" %}selected{% endif %}>Одобрены</option>
+    <option value="REJECTED" {% if status_filter == "REJECTED" %}selected{% endif %}>Отклонены</option>
+  </select>
+  <input type="text" name="user" value="{{ user_filter }}" placeholder="Email пользователя" class="form-control mr-2">
+  <button type="submit" class="btn btn-secondary">Применить</button>
+</form>
+
+<table class="table table-bordered table-sm">
+  <thead>
+    <tr>
+      <th>ID</th><th>Отправитель</th><th>Получатель</th><th>Сумма</th>
+      <th>Статус</th><th>Риск</th><th>Дата</th><th>Действия</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for tx in transactions %}
+      <tr {% if tx.status == 'SUSPICIOUS' %}class="table-warning"{% endif %}>
+        <td>{{ tx.id }}</td>
+        <td>{{ tx.sender.email }}</td>
+        <td>{{ tx.receiver.email }}</td>
+        <td>{{ tx.amount }}</td>
+        <td>
+          {{ tx.status }}
+          {% if tx.status == 'SUSPICIOUS' %} 
+            <span class="badge badge-warning">Подозрительная</span>
+          {% endif %}
+        </td>
+        <td>{{ tx.risk_score|floatformat:0 }}%</td>
+        <td>{{ tx.date|date:"d.m.Y H:i" }}</td>
+        <td>
+          {% if tx.status == 'SUSPICIOUS' %}
+  <a href="{% url 'approve_transaction' tx.id %}" class="btn btn-success btn-sm">Одобрить</a>
+  <a href="{% url 'reject_transaction' tx.id %}" class="btn btn-danger btn-sm">Отклонить</a>
+  <a href="{% url 'reject_transaction' tx.id %}?block=1" class="btn btn-warning btn-sm">Отклонить и заблокировать отправителя</a>
+  {% if log_reasons.tx.id %}
+    <div class="mt-1 text-muted small">Причина: {{ log_reasons.tx.id }}</div>
+  {% endif %}
+          {% else %}
+            -  <!-- для обычных транзакций действий нет -->
+          {% endif %}
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="8">Нет транзакций.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

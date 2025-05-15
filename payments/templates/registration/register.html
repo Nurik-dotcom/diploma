@@ -1,0 +1,14 @@
+{% extends 'payments/base.html' %}
+
+{% block content %}
+  <h2>Регистрация</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    {% if form.non_field_errors %}
+      <div class="error">{{ form.non_field_errors }}</div>
+    {% endif %}
+    <button type="submit">Зарегистрироваться</button>
+  </form>
+  <p>Уже зарегистрированы? <a href="{% url 'login' %}">Войти</a></p>
+{% endblock %}

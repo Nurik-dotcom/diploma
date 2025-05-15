@@ -1,0 +1,36 @@
+{% extends 'payments/base.html' %}
+
+{% block content %}
+  <h2>Профиль пользователя</h2>
+  <p><strong>Номер счёта:</strong> {{ user.account_number }}</p>
+  <p><strong>ФИО:</strong> {{ user.full_name }}</p>
+  <p><strong>Дата рождения:</strong> {{ user.date_of_birth }}</p>
+  <p><strong>Статус счёта:</strong> {{ user.get_account_status_display }}</p>
+  <p><strong>Имя пользователя:</strong> {{ user.username }}</p>
+  <p><strong>Email:</strong> {{ user.email }}</p>
+  <p><strong>Дата регистрации:</strong> {{ user.date_joined }}</p>
+  <p><strong>Баланс:</strong> {{ user.balance }}</p>
+
+  <!-- Блок управления статусом счета -->
+  {% if user.account_status == 'active' %}
+    <form method="post" action="{% url 'freeze_account' %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-warning">Заморозить счет</button>
+    </form>
+  {% elif user.account_status == 'frozen' %}
+    <form method="post" action="{% url 'unfreeze_account' %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-success">Разморозить счет</button>
+
+    </form>
+  {% endif %}
+ <h3 class="mt-4">Пополнить баланс</h3>
+  <form method="post" action="{% url 'top_up_balance' %}">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="amount">Сумма пополнения:</label>
+      <input type="number" step="0.01" name="amount" id="amount" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Пополнить баланс</button>
+  </form>
+{% endblock %}

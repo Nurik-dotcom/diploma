@@ -1,0 +1,12 @@
+{% extends 'payments/base.html' %}
+{% block content %}
+<h2>Создание открытого QR-кода</h2>
+<form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="expires_at">Дата и время истечения (опционально):</label>
+        <input type="datetime-local" name="expires_at" id="expires_at" class="form-control">
+    </div>
+    <button type="submit" class="btn btn-primary">Создать открытый QR-код</button>
+</form>
+{% endblock %}

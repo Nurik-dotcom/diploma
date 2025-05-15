@@ -1,0 +1,36 @@
+{% extends "payments/base.html" %}
+{% block content %}
+<h2>Сканирование QR-кода</h2>
+
+<video id="preview" style="width: 100%; max-width: 400px; border: 2px solid black;"></video>
+<p id="qr_result" style="margin-top: 10px; font-weight: bold;"></p>
+
+<script>
+    let scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
+
+    scanner.addListener('scan', function(content) {
+        document.getElementById('qr_result').innerText = "QR-код найден: " + content;
+        fetch(`/process_qr_code/?qr_data=${encodeURIComponent(content)}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('qr_result').innerText = `Транзакция ID: ${data.transaction_id}, Сумма: ${data.amount}, Статус: ${data.status}`;
+                } else {
+                    document.getElementById('qr_result').innerText = "Ошибка: " + data.error;
+                }
+            })
+            .catch(error => console.error("Ошибка при обработке QR-кода:", error));
+    });
+
+    Instascan.Camera.getCameras().then(function(cameras) {
+        if (cameras.length > 0) {
+            scanner.start(cameras[0]); // Включаем камеру
+        } else {
+            alert("Камера не найдена");
+        }
+    }).catch(function(e) {
+        console.error(e);
+    });
+</script>
+
+{% endblock %}

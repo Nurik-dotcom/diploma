@@ -1,0 +1,41 @@
+{% extends 'payments/base.html' %}
+{% block content %}
+<h2>Перевод через QR-код</h2>
+<p>Перевод на счёт: {{ qr.owner.full_name }} ({{ qr.owner.account_number }})</p>
+<p>Тип QR-кода: {{ qr.get_qr_type_display }}</p>
+{% if qr.qr_type == 'fixed' %}
+  <p>Фиксированная сумма перевода: {{ qr.fixed_amount }}</p>
+{% else %}
+  <form method="post" action="{% url 'transfer_qr' qr.code %}">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="amount">Введите сумму перевода:</label>
+      <input type="number" step="0.01" name="amount" id="amount" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Перевести</button>
+  </form>
+{% endif %}
+{% if qr.expires_at %}
+  <p>QR-код истекает: {{ qr.expires_at }}</p>
+  <p>Осталось времени: <span id="timer"></span> секунд</p>
+  <script>
+    let expiresAt = new Date("{{ qr.expires_at|date:'Y-m-d H:i:s' }}").getTime();
+    let x = setInterval(function() {
+      let now = new Date().getTime();
+      let distance = expiresAt - now;
+      if (distance < 0) {
+        clearInterval(x);
+        document.getElementById("timer").innerHTML = "Истёк";
+      } else {
+        document.getElementById("timer").innerHTML = Math.floor(distance/1000);
+      }
+    }, 1000);
+  </script>
+{% endif %}
+{% if qr.qr_type == 'fixed' %}
+  <form method="post" action="{% url 'transfer_qr' qr.code %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary">Подтвердить перевод</button>
+  </form>
+{% endif %}
+{% endblock %}

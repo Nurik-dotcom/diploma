@@ -1,0 +1,19 @@
+{% extends 'payments/base.html' %}
+
+{% block content %}
+  <h2>Просмотр QR-кода для сканирования</h2>
+  <p><strong>Владелец:</strong> {{ qr.owner.full_name }} ({{ qr.owner.account_number }})</p>
+  <p><strong>Тип:</strong> {{ qr.get_qr_type_display }}</p>
+  {% if qr.qr_type == 'fixed' %}
+    <p><strong>Фиксированная сумма:</strong> {{ qr.fixed_amount }}</p>
+  {% endif %}
+  <p><strong>Дата создания:</strong> {{ qr.created_at|date:"d.m.Y H:i" }}</p>
+  {% if qr.expires_at %}
+    <p><strong>Осталось времени:</strong> {{ qr.remaining_time|floatformat:0 }} сек.</p>
+  {% else %}
+    <p>Без срока действия</p>
+  {% endif %}
+  <!-- Отображение QR-кода через динамическую генерацию -->
+  <img src="{% url 'qr_code_image' qr.code %}" alt="QR Code" style="max-width:300px;">
+  <p>Сфотографируйте данный QR-код вашим телефоном для совершения перевода.</p>
+{% endblock %}
